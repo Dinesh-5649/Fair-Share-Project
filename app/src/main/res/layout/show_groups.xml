@@ -4,19 +4,28 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
-    android:background="@color/blue"
     android:layout_height="match_parent"
     tools:context=".ShowGroups">
 
 
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/showgroup_background"
+        android:scaleType="centerCrop"
+
+        />
+
     <TextView
         android:id="@+id/tv"
-        android:layout_width="wrap_content"
-        android:layout_height="48dp"
-        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:background="@color/blue"
         android:text="Hello"
         android:textColor="@color/white"
-        android:textSize="30sp"
+        android:paddingEnd="10dp"
+        android:gravity="end"
+        android:textSize="35sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.827"
         app:layout_constraintStart_toStartOf="parent"
@@ -27,7 +36,7 @@
         android:layout_width="match_parent"
         app:layout_constraintTop_toBottomOf="@+id/tv"
         android:layout_height="match_parent"
-        android:layout_marginTop="50dp"
+        android:layout_marginTop="60dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
 
