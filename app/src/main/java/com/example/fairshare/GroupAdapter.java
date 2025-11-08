@@ -31,7 +31,8 @@ public class GroupAdapter extends ArrayAdapter<String> {
         }
 
         TextView groupName = convertView.findViewById(R.id.textView);
-        groupName.setText(groups.indexOf(position));
+        String currentGroupName = groups.get(position);
+        groupName.setText(currentGroupName);
         return convertView;
     }
 }

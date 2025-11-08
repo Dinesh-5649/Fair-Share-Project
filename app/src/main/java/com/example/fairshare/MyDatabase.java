@@ -144,7 +144,7 @@ public class MyDatabase extends SQLiteOpenHelper {
             return groupId;
         }
     }
-
+/// /
     //Find user id by user name
     //  Helper method to find UserID by UserName    //
 
