@@ -28,9 +28,9 @@ public class ForgetPassword extends AppCompatActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String name = et1.getText().toString().trim();
+                String number = et1.getText().toString().trim();
                 String password = et2.getText().toString().trim();
-                if(db.updatePassword(name,password)){
+                if(db.updatePassword(number,password)){
                     Toast.makeText(ForgetPassword.this,"Password updated successfully",Toast.LENGTH_SHORT).show();
                     finish();
                 }
