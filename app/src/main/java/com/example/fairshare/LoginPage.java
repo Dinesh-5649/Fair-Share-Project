@@ -2,6 +2,7 @@ package com.example.fairshare;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -15,7 +16,7 @@ import androidx.core.view.WindowInsetsCompat;
 public class LoginPage extends AppCompatActivity {
 
     EditText etUsername, etPassword;
-    Button btnLogin, btnRegister;
+    Button btnLogin, btnRegister, btnForgot;
     MyDatabase db;
 
     @Override
@@ -27,6 +28,7 @@ public class LoginPage extends AppCompatActivity {
         etPassword = findViewById(R.id.et2);
         btnLogin = findViewById(R.id.btnLogin);
         btnRegister = findViewById(R.id.btnRegister);
+        btnForgot = findViewById(R.id.button2);
         db = new MyDatabase(this);
 
         btnRegister.setOnClickListener(v -> {
@@ -35,6 +37,7 @@ public class LoginPage extends AppCompatActivity {
 
             if (username.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+                return;
 
             }
 
@@ -59,6 +62,14 @@ public class LoginPage extends AppCompatActivity {
                 intent.putExtra("username", username);
                 startActivity(intent);
 
+            }
+        });
+
+        btnForgot.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent k = new Intent(LoginPage.this,ForgetPassword.class);
+                startActivity(k);
             }
         });
     }
