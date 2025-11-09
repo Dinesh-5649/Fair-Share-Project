@@ -20,13 +20,14 @@ public class MyDatabase extends SQLiteOpenHelper {
 
     Context context;
     public static final String DATABASE_NAME = "my_database.db";
-    public static final int DATABASE_VERSION = 2; //
+    public static final int DATABASE_VERSION = 3;
 
     // TABLE: Users
     public static final String TABLE_USERS = "users";
     public static final String COLUMN_USER_ID = "user_id";
     public static final String COLUMN_USERNAME = "username";
     public static final String COLUMN_PASSWORD = "password";
+    public static final String COLUMN_NUMBER = "number";
 
     // TABLE: Groups
     public static final String TABLE_GROUPS = "group_table";
@@ -46,6 +47,7 @@ public class MyDatabase extends SQLiteOpenHelper {
         String createUsersTable = "CREATE TABLE " + TABLE_USERS + " (" +
                 COLUMN_USER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COLUMN_USERNAME + " TEXT UNIQUE NOT NULL, " +
+                COLUMN_NUMBER + " TEXT UNIQUE NOT NULL, " +
                 COLUMN_PASSWORD + " TEXT NOT NULL);";
 
         // Create Groups Table
@@ -78,15 +80,26 @@ public class MyDatabase extends SQLiteOpenHelper {
     //  USERS - LOGIN / SIGNUP
     // ============================
 
-    public boolean registerUser(String username, String password) {
+    public boolean registerUser(String username, String number, String password) {
+
+        if(username.isEmpty() || number.isEmpty() || password.isEmpty() || username == null || number== null|| password== null){
+            Toast.makeText(context, "Please enter all the details", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if(number.length() != 10){
+            Toast.makeText(context, "Invalid Number", Toast.LENGTH_SHORT).show();
+            return false;
+        }
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put(COLUMN_USERNAME, username);
+        cv.put(COLUMN_NUMBER,number);
         cv.put(COLUMN_PASSWORD, password);
 
         long result = db.insert(TABLE_USERS, null, cv);
         if (result == -1) {
-            Toast.makeText(context, "Registration failed", Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, "Please enter a different User name or Number", Toast.LENGTH_SHORT).show();
             return false;
         } else {
             Toast.makeText(context, "User registered successfully", Toast.LENGTH_SHORT).show();
@@ -114,20 +127,20 @@ public class MyDatabase extends SQLiteOpenHelper {
     }
 
     /// Update password
-    public boolean updatePassword(String userName, String newPassword){
+    public boolean updatePassword(String number, String newPassword){
 
         //  Validate the input (e.g., check for nulls or length)
-        if (userName == null || newPassword == null || newPassword.isEmpty()) {
+        if (number == null || newPassword == null || newPassword.isEmpty() || number.isEmpty()) {
             Toast.makeText(context,"Please enter both details",Toast.LENGTH_LONG).show();
             return false;
         }
 
         /// Check if the user exist
         SQLiteDatabase db = this.getWritableDatabase();
-        String query = "SELECT * FROM "+TABLE_USERS+" WHERE "+COLUMN_USERNAME+" =?";
-        Cursor c= db.rawQuery(query,new String[]{userName});
+        String query = "SELECT * FROM "+TABLE_USERS+" WHERE "+COLUMN_NUMBER+" =?";
+        Cursor c= db.rawQuery(query,new String[]{number});
         if(c.getCount()==0){
-            Toast.makeText(context,"User does not exist",Toast.LENGTH_LONG).show();
+            Toast.makeText(context,"User does not exist in this Number",Toast.LENGTH_LONG).show();
             c.close();
             db.close();
             return false;
@@ -136,8 +149,8 @@ public class MyDatabase extends SQLiteOpenHelper {
         }
 
         /// Check if new password is the same
-        String query1 = "SELECT * FROM "+TABLE_USERS+" WHERE "+COLUMN_USERNAME+" =? AND "+ COLUMN_PASSWORD+" =?";
-        Cursor c1= db.rawQuery(query1,new String[]{userName,newPassword});
+        String query1 = "SELECT * FROM "+TABLE_USERS+" WHERE "+COLUMN_NUMBER+" =? AND "+ COLUMN_PASSWORD+" =?";
+        Cursor c1= db.rawQuery(query1,new String[]{number,newPassword});
         if(c1.getCount()>0){
             Toast.makeText(context,"New Password cannot be the same",Toast.LENGTH_LONG).show();
             c1.close();
@@ -150,8 +163,8 @@ public class MyDatabase extends SQLiteOpenHelper {
         //update password
         ContentValues cv = new ContentValues();
         cv.put(COLUMN_PASSWORD, newPassword);
-        String where = COLUMN_USERNAME+ " =?";
-        int result = db.update(TABLE_USERS,cv,where,new String[]{userName});
+        String where = COLUMN_NUMBER+ " =?";
+        int result = db.update(TABLE_USERS,cv,where,new String[]{number});
         db.close();
         return result==1;
     }

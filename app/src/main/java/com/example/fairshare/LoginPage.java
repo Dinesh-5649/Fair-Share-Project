@@ -32,24 +32,9 @@ public class LoginPage extends AppCompatActivity {
         db = new MyDatabase(this);
 
         btnRegister.setOnClickListener(v -> {
-            String username = etUsername.getText().toString().trim();
-            String password = etPassword.getText().toString().trim();
 
-            if (username.isEmpty() || password.isEmpty()) {
-                Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-                return;
-
-            }
-
-            if(db.registerUser(username, password)){
-                Intent intent = new Intent(LoginPage.this, ShowGroups.class);
-                intent.putExtra("username", username);
-                startActivity(intent);
-            }
-
-            etUsername.setText("");
-            etPassword.setText("");
-
+            Intent intent = new Intent(LoginPage.this, RegisterPage.class);
+            startActivity(intent);
         });
 
         btnLogin.setOnClickListener(v -> {
