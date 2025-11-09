@@ -39,8 +39,10 @@ public class AddGroups extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 MyDatabase my = new MyDatabase(AddGroups.this);
-                my.addGroup(group_name.getText().toString().trim(),userName);
-                finish();
+                final String name = group_name.getText().toString().trim();
+                if(my.addGroup(name,userName)){
+                    finish();
+                }
             }
         });
 

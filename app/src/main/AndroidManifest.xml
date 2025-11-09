@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FairShare">
         <activity
+            android:name=".ForgetPassword"
+            android:exported="false" />
+        <activity
             android:name=".AddGroups"
             android:exported="false" />
         <activity

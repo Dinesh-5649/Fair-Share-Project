@@ -113,10 +113,59 @@ public class MyDatabase extends SQLiteOpenHelper {
         return loginSuccess;
     }
 
+    /// Update password
+    public boolean updatePassword(String userName, String newPassword){
+
+        //  Validate the input (e.g., check for nulls or length)
+        if (userName == null || newPassword == null || newPassword.isEmpty()) {
+            Toast.makeText(context,"Please enter both details",Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        /// Check if the user exist
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT * FROM "+TABLE_USERS+" WHERE "+COLUMN_USERNAME+" =?";
+        Cursor c= db.rawQuery(query,new String[]{userName});
+        if(c.getCount()==0){
+            Toast.makeText(context,"User does not exist",Toast.LENGTH_LONG).show();
+            c.close();
+            db.close();
+            return false;
+        } else {
+            c.close();
+        }
+
+        /// Check if new password is the same
+        String query1 = "SELECT * FROM "+TABLE_USERS+" WHERE "+COLUMN_USERNAME+" =? AND "+ COLUMN_PASSWORD+" =?";
+        Cursor c1= db.rawQuery(query1,new String[]{userName,newPassword});
+        if(c1.getCount()>0){
+            Toast.makeText(context,"New Password cannot be the same",Toast.LENGTH_LONG).show();
+            c1.close();
+            db.close();
+            return false;
+        } else {
+            c1.close();
+        }
+
+        //update password
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_PASSWORD, newPassword);
+        String where = COLUMN_USERNAME+ " =?";
+        int result = db.update(TABLE_USERS,cv,where,new String[]{userName});
+        db.close();
+        return result==1;
+    }
+
+
     //  Create group
     // ============================
-    public long addGroup(String groupName, String creatorUsername) {
+    public boolean addGroup(String groupName, String creatorUsername) {
         SQLiteDatabase db = this.getWritableDatabase();
+
+        if(groupName.isEmpty() || groupName==null){
+            Toast.makeText(context, "Please enter the group name", Toast.LENGTH_SHORT).show();
+            return false;
+        }
 
         // Check for the duplicate group name
         Cursor cursor = db.rawQuery(
@@ -126,7 +175,7 @@ public class MyDatabase extends SQLiteOpenHelper {
         if (cursor.getCount() > 0) {
             Toast.makeText(context, "Group name already exists!", Toast.LENGTH_SHORT).show();
             cursor.close();
-            return -1;
+            return false;
         }
         cursor.close();
         // Create group
@@ -137,14 +186,13 @@ public class MyDatabase extends SQLiteOpenHelper {
 
         if (groupId == -1) {
             Toast.makeText(context, "Failed to add group", Toast.LENGTH_SHORT).show();
-            return -1;
+            return false;
         } else {
             Toast.makeText(context, "Group created successfully", Toast.LENGTH_SHORT).show();
 
-            return groupId;
+            return true;
         }
     }
-/// /
     //Find user id by user name
     //  Helper method to find UserID by UserName    //
 
@@ -204,6 +252,7 @@ public class MyDatabase extends SQLiteOpenHelper {
         cursor.close();
         return groupId;
     }
+
 
 
 }
