@@ -59,7 +59,6 @@ public class MyDatabase extends SQLiteOpenHelper {
         db.execSQL(createUsersTable);
         db.execSQL(createGroupsTable);
 
-
     }
 
     @Override
@@ -265,7 +264,6 @@ public class MyDatabase extends SQLiteOpenHelper {
         cursor.close();
         return groupId;
     }
-
 
 
 }
