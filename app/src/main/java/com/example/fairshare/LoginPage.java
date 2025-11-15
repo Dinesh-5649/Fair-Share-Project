@@ -28,7 +28,7 @@ public class LoginPage extends AppCompatActivity {
         etPassword = findViewById(R.id.et2);
         btnLogin = findViewById(R.id.btnLogin);
         btnRegister = findViewById(R.id.btnRegister);
-        btnForgot = findViewById(R.id.button2);
+        btnForgot = findViewById(R.id.btnForgotPassword);
         db = new MyDatabase(this);
 
         btnRegister.setOnClickListener(v -> {
