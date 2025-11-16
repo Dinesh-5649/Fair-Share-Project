@@ -20,7 +20,7 @@ public class MyDatabase extends SQLiteOpenHelper {
 
     Context context;
     public static final String DATABASE_NAME = "my_database.db";
-    public static final int DATABASE_VERSION = 3;
+    public static final int DATABASE_VERSION = 5;
 
     // TABLE: Users
     public static final String TABLE_USERS = "users";
@@ -28,13 +28,17 @@ public class MyDatabase extends SQLiteOpenHelper {
     public static final String COLUMN_USERNAME = "username";
     public static final String COLUMN_PASSWORD = "password";
     public static final String COLUMN_NUMBER = "number";
+    public static final String COLUMN_EMAIL = "email_id";
+    public static final String COLUMN_AGE = "age";
+    public static final String COLUMN_GENDER = "gender";
+    public static final String COLUMN_UPDATED_TIME = "updated_time";
+
+
 
     // TABLE: Groups
     public static final String TABLE_GROUPS = "group_table";
     public static final String COLUMN_GROUP_ID = "group_id";
     public static final String COLUMN_GROUP_NAME = "group_name";
-
-
 
     public MyDatabase(@Nullable Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -46,9 +50,13 @@ public class MyDatabase extends SQLiteOpenHelper {
         // Create Users Table
         String createUsersTable = "CREATE TABLE " + TABLE_USERS + " (" +
                 COLUMN_USER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COLUMN_USERNAME + " TEXT UNIQUE NOT NULL, " +
+                COLUMN_USERNAME + " TEXT NOT NULL, " +
                 COLUMN_NUMBER + " TEXT UNIQUE NOT NULL, " +
-                COLUMN_PASSWORD + " TEXT NOT NULL);";
+                COLUMN_PASSWORD + " TEXT NOT NULL, "+
+                COLUMN_AGE + " INTEGER NOT NULL, " +
+                COLUMN_GENDER + " TEXT NOT NULL, " +
+                COLUMN_EMAIL + " TEXT NOT NULL, " +
+                COLUMN_UPDATED_TIME + " DATETIME DEFAULT CURRENT_TIMESTAMP)";
 
         // Create Groups Table
         String createGroupsTable = "CREATE TABLE " + TABLE_GROUPS + " (" +
@@ -79,7 +87,7 @@ public class MyDatabase extends SQLiteOpenHelper {
     //  USERS - LOGIN / SIGNUP
     // ============================
 
-    public boolean registerUser(String username, String number, String password) {
+    public boolean registerUser(String username, String number, String password,int age, String gender, String email) {
 
         if(username.isEmpty() || number.isEmpty() || password.isEmpty() || username == null || number== null|| password== null){
             Toast.makeText(context, "Please enter all the details", Toast.LENGTH_SHORT).show();
@@ -95,6 +103,15 @@ public class MyDatabase extends SQLiteOpenHelper {
         cv.put(COLUMN_USERNAME, username);
         cv.put(COLUMN_NUMBER,number);
         cv.put(COLUMN_PASSWORD, password);
+        cv.put(COLUMN_AGE,age);
+        cv.put(COLUMN_GENDER,gender);
+        cv.put(COLUMN_EMAIL,email);
+
+        //Get current time
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+        String currentTime = sdf.format(new Date());
+        cv.put(COLUMN_UPDATED_TIME, currentTime);
 
         long result = db.insert(TABLE_USERS, null, cv);
         if (result == -1) {
@@ -136,7 +153,7 @@ public class MyDatabase extends SQLiteOpenHelper {
 
         /// Check if the user exist
         SQLiteDatabase db = this.getWritableDatabase();
-        String query = "SELECT * FROM "+TABLE_USERS+" WHERE "+COLUMN_NUMBER+" =?";
+        String query = "SELECT * FROM "+TABLE_USERS+" WHERE "+COLUMN_NUMBER+ " =?";
         Cursor c= db.rawQuery(query,new String[]{number});
         if(c.getCount()==0){
             Toast.makeText(context,"User does not exist in this Number",Toast.LENGTH_LONG).show();
