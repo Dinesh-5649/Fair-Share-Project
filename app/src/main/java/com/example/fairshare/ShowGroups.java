@@ -28,6 +28,7 @@ public class ShowGroups extends AppCompatActivity {
     ListView lv;
     String name;
     GroupAdapter ga;
+    ArrayList<String> groups;
 
     MyDatabase db;
 
@@ -55,6 +56,19 @@ public class ShowGroups extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+        lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String groupName = groups.get(position);
+                int groupId = db.getGroupIdByGroupName(groupName);
+                Intent i = new Intent(ShowGroups.this,ShowMembers.class);
+                i.putExtra("groupId",groupId);
+                i.putExtra("groupName",groupName);
+                i.putExtra("userName",name);
+                startActivity(i);
+            }
+        });
     }
     @Override
     protected void onResume()
@@ -67,7 +81,7 @@ public class ShowGroups extends AppCompatActivity {
 
         db= new MyDatabase(this);
 
-        ArrayList<String> groups = db.getGroupsForUser(name);
+        groups = db.getGroupsForUser(name);
         ga = new GroupAdapter((Context) this, groups);
         lv.setAdapter(ga);
 
