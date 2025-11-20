@@ -28,19 +28,23 @@ public class AddGroups extends AppCompatActivity {
         Intent intent = getIntent();
         String userName = intent.getStringExtra("name");
 
+        MyDatabase my = new MyDatabase(AddGroups.this);
         group_name = findViewById(R.id.et1);
         bt1 = findViewById(R.id.bt1);
         tv = findViewById(R.id.tv);
         tv.setText(userName);
+        String phoneNumber = my.getPhoneNumber(userName);
 
 
 
         bt1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyDatabase my = new MyDatabase(AddGroups.this);
+
                 final String name = group_name.getText().toString().trim();
-                if(my.addGroup(name,userName)){
+                if (my.addGroup(name,userName)) {
+                   int groupID =  my.getGroupIdByGroupName(name);
+                    my.addMembers(userName, groupID,phoneNumber);
                     finish();
                 }
             }
