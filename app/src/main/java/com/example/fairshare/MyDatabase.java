@@ -20,7 +20,7 @@ public class MyDatabase extends SQLiteOpenHelper {
 
     Context context;
     public static final String DATABASE_NAME = "my_database.db";
-    public static final int DATABASE_VERSION = 11;
+    public static final int DATABASE_VERSION = 13;
 
     // TABLE: Users
     public static final String TABLE_USERS = "users";
@@ -59,7 +59,7 @@ public class MyDatabase extends SQLiteOpenHelper {
         // Create Users Table
         String createUsersTable = "CREATE TABLE " + TABLE_USERS + " (" +
                 COLUMN_USER_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COLUMN_USERNAME + " TEXT NOT NULL, " +
+                COLUMN_USERNAME + " TEXT UNIQUE NOT NULL, " +
                 COLUMN_NUMBER + " TEXT UNIQUE NOT NULL, " +
                 COLUMN_PASSWORD + " TEXT NOT NULL, " +
                 COLUMN_AGE + " INTEGER NOT NULL, " +
@@ -282,23 +282,42 @@ public class MyDatabase extends SQLiteOpenHelper {
         ArrayList<String> groupList = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Integer userId = getUserIdByUsername(username);
-        if (userId == null) {
-            Toast.makeText(context, "User not found!", Toast.LENGTH_SHORT).show();
-            return groupList;
-        }
+        // Step 1: Get group IDs from members_table
+        String query = "SELECT DISTINCT " + COLUMN_GROUP_REF_ID_FOR_MEMBERS +
+                " FROM " + TABLE_MEMBERS +
+                " WHERE " + COLUMN_MEMBER_NAME + " = ?";
 
-        String query = "SELECT " + COLUMN_GROUP_NAME + " FROM " + TABLE_GROUPS;
-        Cursor cursor = db.rawQuery(query, null);
+        Cursor cursor = db.rawQuery(query, new String[]{username});
+
+        ArrayList<Integer> groupIds = new ArrayList<>();
 
         if (cursor.moveToFirst()) {
             do {
-                String groupName = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_GROUP_NAME));
-                groupList.add(groupName);
+                groupIds.add(cursor.getInt(
+                        cursor.getColumnIndexOrThrow(COLUMN_GROUP_REF_ID_FOR_MEMBERS)
+                ));
             } while (cursor.moveToNext());
         }
 
         cursor.close();
+
+        // Step 2: Fetch group names using those IDs
+        for (int groupId : groupIds) {
+            Cursor groupCursor = db.rawQuery(
+                    "SELECT " + COLUMN_GROUP_NAME +
+                            " FROM " + TABLE_GROUPS +
+                            " WHERE " + COLUMN_GROUP_ID + " = ?",
+                    new String[]{String.valueOf(groupId)}
+            );
+
+            if (groupCursor.moveToFirst()) {
+                groupList.add(groupCursor.getString(
+                        groupCursor.getColumnIndexOrThrow(COLUMN_GROUP_NAME)
+                ));
+            }
+            groupCursor.close();
+        }
+
         db.close();
         return groupList;
     }
@@ -347,6 +366,7 @@ public class MyDatabase extends SQLiteOpenHelper {
         cv.put(COLUMN_GROUP_REF_ID_FOR_MEMBERS, groupId);
         cv.put(COLUMN_MEMBER_NUMBER, phoneNumber);
 
+
         long result = db.insert(TABLE_MEMBERS, null, cv);
 
         return result != -1;
@@ -354,20 +374,6 @@ public class MyDatabase extends SQLiteOpenHelper {
 
 
     // Helper method to find groupId by groupName
-    public int getGroupID(String groupName) {
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor c = db.rawQuery("SELECT "+ COLUMN_GROUP_ID +" FROM " + TABLE_GROUPS + " WHERE " + COLUMN_GROUP_NAME + " =?", new String[]{groupName});
-
-        Integer GroupId = null;
-        if (c.moveToFirst()) {
-            GroupId = c.getInt(c.getColumnIndexOrThrow(COLUMN_GROUP_ID));
-
-        }
-        c.close();
-
-        return GroupId;
-
-    }
 
     public String getPhoneNumber(String username) {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -383,5 +389,28 @@ public class MyDatabase extends SQLiteOpenHelper {
 
     }
 
+    public ArrayList<String> getMembersByGroup(int groupId) {
+        ArrayList<String> members = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT " + COLUMN_MEMBER_NAME +
+                " FROM " + TABLE_MEMBERS +
+                " WHERE " + COLUMN_GROUP_REF_ID_FOR_MEMBERS + " = ?";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(groupId)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                members.add(cursor.getString(
+                        cursor.getColumnIndexOrThrow(COLUMN_MEMBER_NAME)
+                ));
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+
+        return members;
+    }
 
 }

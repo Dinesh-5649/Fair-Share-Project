@@ -12,14 +12,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FairShare">
         <activity
+            android:name=".ShowMembers"
+            android:exported="false" />
+        <activity
             android:name=".RegisterPage"
             android:exported="false" />
         <activity
             android:name=".ForgetPassword"
-            android:exported="false">
-
-        </activity>
-
+            android:exported="false"></activity>
         <activity
             android:name=".AddGroups"
             android:exported="false" />
@@ -34,7 +34,6 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
     </application>
 
