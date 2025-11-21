@@ -3,6 +3,7 @@ package com.example.fairshare;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -43,6 +44,15 @@ public class ShowMembers extends AppCompatActivity {
         lv = findViewById(R.id.lv);
         tv.setText(""+groupName);
 
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(ShowMembers.this, AddMembers.class);
+                i.putExtra("groupName", groupName);
+                i.putExtra("groupId", groupId);
+                startActivity(i);
+            }
+        });
 
     }
 

@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FairShare">
         <activity
+            android:name=".AddMembers"
+            android:exported="false" />
+        <activity
             android:name=".ShowMembers"
             android:exported="false" />
         <activity
@@ -19,7 +22,7 @@
             android:exported="false" />
         <activity
             android:name=".ForgetPassword"
-            android:exported="false"></activity>
+            android:exported="false" />
         <activity
             android:name=".AddGroups"
             android:exported="false" />

@@ -369,7 +369,7 @@ public class MyDatabase extends SQLiteOpenHelper {
 
         long result = db.insert(TABLE_MEMBERS, null, cv);
 
-        return result != -1;
+        return result!= -1;
     }
 
 
@@ -412,5 +412,27 @@ public class MyDatabase extends SQLiteOpenHelper {
 
         return members;
     }
+
+    public ArrayList<String> getAllUserNames() {
+        ArrayList<String> usersList = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT " + COLUMN_USERNAME + " FROM " + TABLE_USERS;
+
+        Cursor cursor = db.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                String username = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USERNAME));
+                usersList.add(username);
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+
+        return usersList;
+    }
+
 
 }
