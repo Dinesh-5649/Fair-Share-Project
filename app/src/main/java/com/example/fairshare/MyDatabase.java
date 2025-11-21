@@ -20,7 +20,7 @@ public class MyDatabase extends SQLiteOpenHelper {
 
     Context context;
     public static final String DATABASE_NAME = "my_database.db";
-    public static final int DATABASE_VERSION = 13;
+    public static final int DATABASE_VERSION = 1;
 
     // TABLE: Users
     public static final String TABLE_USERS = "users";
@@ -82,9 +82,10 @@ public class MyDatabase extends SQLiteOpenHelper {
                 COLUMN_MEMBER_NAME + " TEXT NOT NULL, "+
                 COLUMN_MEMBER_NUMBER +" TEXT NOT NULL, " +
 
-                "FOREIGN KEY(" + COLUMN_GROUP_REF_ID_FOR_MEMBERS + ") REFERENCES " + TABLE_GROUPS + "(" + COLUMN_GROUP_ID + "));";
+                "FOREIGN KEY(" + COLUMN_GROUP_REF_ID_FOR_MEMBERS + ") REFERENCES " + TABLE_GROUPS + "(" + COLUMN_GROUP_ID + ") ON DELETE CASCADE);";
 
 
+        db.execSQL("PRAGMA foreign_keys = ON");
         db.execSQL(createUsersTable);
         db.execSQL(createGroupsTable);
         db.execSQL(createMembersTable);
@@ -340,11 +341,6 @@ public class MyDatabase extends SQLiteOpenHelper {
 
         SQLiteDatabase db = this.getWritableDatabase();
 
-        if (membersName == null || membersName.isEmpty()) {
-            Toast.makeText(context, "Please enter the member name", Toast.LENGTH_SHORT).show();
-            return false;
-        }
-
         // CHECK IF SAME MEMBER EXISTS IN SAME GROUP ONLY
         Cursor cursor = db.rawQuery(
                 "SELECT * FROM " + TABLE_MEMBERS +
@@ -434,5 +430,52 @@ public class MyDatabase extends SQLiteOpenHelper {
         return usersList;
     }
 
+    /// /////// Get the group creator name by group ID
+
+    public String getGroupCreator(int groupId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery( "SELECT " + COLUMN_GROUP_CREATOR + " FROM " + TABLE_GROUPS + " WHERE " + COLUMN_GROUP_ID + " = ?",
+                new String[]{String.valueOf(groupId)});
+
+        String groupCreator="";
+        if (c.moveToFirst()) {
+            groupCreator = c.getString(c.getColumnIndexOrThrow(COLUMN_GROUP_CREATOR));
+        }
+        c.close();
+        return groupCreator;
+
+    }
+
+    /// / Delete a member from a group
+    public void deleteMemberFromGroup(String memberName, int groupId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        long result = db.delete(
+                TABLE_MEMBERS,
+                COLUMN_MEMBER_NAME + "=? AND " + COLUMN_GROUP_REF_ID_FOR_MEMBERS + "=?",
+                new String[]{memberName, String.valueOf(groupId)}
+        );
+        if(result==-1){
+            Toast.makeText(context,"Failed to exit", Toast.LENGTH_SHORT).show();
+        }else Toast.makeText(context,"Exited successfully", Toast.LENGTH_SHORT).show();
+
+        db.close();
+    }
+
+    /// // Delete group
+    public void deleteGroup( int groupId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+       long result= db.delete(
+                TABLE_GROUPS,
+                COLUMN_GROUP_ID + "=?",
+                new String[]{String.valueOf(groupId)}
+        );
+        if(result==-1){
+            Toast.makeText(context,"Failed to delete", Toast.LENGTH_SHORT).show();
+        }else Toast.makeText(context,"Deleted Successfully", Toast.LENGTH_SHORT).show();
+
+        db.close();
+    }
 
 }
