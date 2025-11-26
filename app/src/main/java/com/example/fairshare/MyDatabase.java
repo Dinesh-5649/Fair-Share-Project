@@ -459,6 +459,18 @@ public class MyDatabase extends SQLiteOpenHelper {
             Toast.makeText(context,"Failed to exit", Toast.LENGTH_SHORT).show();
         }else Toast.makeText(context,"Exited successfully", Toast.LENGTH_SHORT).show();
 
+        ///     ////////////////////////////
+        ContentValues cv = new ContentValues();
+
+        String where = COLUMN_GROUP_ID + " =?";
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+        String currentTime = sdf.format(new Date());
+
+        cv.put(COLUMN_GROUP_UPDATED_TIME, currentTime);
+        db.update(TABLE_USERS, cv, where, new String[]{String.valueOf(groupId)});
+
         db.close();
     }
 
