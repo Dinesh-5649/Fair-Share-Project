@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -22,10 +23,11 @@ import java.util.ArrayList;
 public class ShowMembers extends AppCompatActivity {
 
     FloatingActionButton button;
+    Button delete;
     TextView tv;
     EditText et;
     ListView lv;
-    String groupName;
+    String groupName, userName;
     int  groupId;
     MyDatabase db;
 
@@ -35,14 +37,37 @@ public class ShowMembers extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.show_members);
 
+        MyDatabase db1= new MyDatabase(this);
         Intent i = getIntent();
         groupName = i.getStringExtra("groupName");
         groupId = i.getIntExtra("groupId",0);
+        userName = i.getStringExtra("userName");
+        String groupCreator = db1.getGroupCreator(groupId);
 
         button = findViewById(R.id.button);
+        delete = findViewById(R.id.delete);
         tv = findViewById(R.id.tv);
         lv = findViewById(R.id.lv);
         tv.setText(""+groupName);
+
+        if(groupCreator.equals(userName)){
+            delete.setText("Delete");
+        }
+
+        delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(groupCreator.equals(userName)){
+                    db1.deleteGroup(groupId);
+                    finish();
+                }
+                else{
+                    db1.deleteMemberFromGroup(userName,groupId);
+                    finish();
+                }
+
+            }
+        });
 
         button.setOnClickListener(new View.OnClickListener() {
             @Override
