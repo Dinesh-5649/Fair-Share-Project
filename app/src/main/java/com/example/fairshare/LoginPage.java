@@ -1,6 +1,7 @@
 package com.example.fairshare;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -31,6 +32,8 @@ public class LoginPage extends AppCompatActivity {
         btnForgot = findViewById(R.id.btnForgotPassword);
         db = new MyDatabase(this);
 
+
+
         btnRegister.setOnClickListener(v -> {
 
             Intent intent = new Intent(LoginPage.this, RegisterPage.class);
@@ -40,6 +43,11 @@ public class LoginPage extends AppCompatActivity {
         btnLogin.setOnClickListener(v -> {
             String username = etUsername.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
+
+            SharedPreferences login = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+            login.edit().putString("username", username).apply();
+            login.edit().putString("password", password).apply();
+
 
             if (db.loginUser(username, password)) {
 
