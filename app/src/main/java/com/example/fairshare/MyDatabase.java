@@ -20,7 +20,7 @@ public class MyDatabase extends SQLiteOpenHelper {
 
     Context context;
     public static final String DATABASE_NAME = "my_database.db";
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 4;
 
     // TABLE: Users
     public static final String TABLE_USERS = "users";
@@ -48,6 +48,15 @@ public class MyDatabase extends SQLiteOpenHelper {
     public static final String COLUMN_MEMBER_NAME = "member_name";
     public static final String COLUMN_MEMBER_NUMBER = "phone_number";
     public static final String COLUMN_GROUP_REF_ID_FOR_MEMBERS = "group_reference";
+
+    // Messages
+    public static final String TABLE_MESSAGES = "messages";
+    public static final String COLUMN_MESSAGE_ID = "message_id";
+    public static final String COLUMN_GROUP_REF_ID_FOR_MESSAGE = "group_id";
+    public static final String COLUMN_SENDER_ID = "sender_id";
+    public static final String COLUMN_MESSAGE_TEXT = "message_text";
+    public static final String COLUMN_TIMESTAMP = "timestamp";
+
 
     public MyDatabase(@Nullable Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -84,11 +93,21 @@ public class MyDatabase extends SQLiteOpenHelper {
 
                 "FOREIGN KEY(" + COLUMN_GROUP_REF_ID_FOR_MEMBERS + ") REFERENCES " + TABLE_GROUPS + "(" + COLUMN_GROUP_ID + ") ON DELETE CASCADE);";
 
+        // Create Message Table
+        String createMessagesTable = "CREATE TABLE " + TABLE_MESSAGES + " (" +
+                COLUMN_MESSAGE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COLUMN_GROUP_REF_ID_FOR_MESSAGE + " INTEGER, " +
+                COLUMN_SENDER_ID + " INTEGER, " +
+                COLUMN_MESSAGE_TEXT + " TEXT, " +
+                COLUMN_TIMESTAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+                "FOREIGN KEY(" + COLUMN_GROUP_REF_ID_FOR_MESSAGE + ") REFERENCES " + TABLE_GROUPS + "(" + COLUMN_GROUP_ID + ") ON DELETE CASCADE, " +
+                "FOREIGN KEY(" + COLUMN_SENDER_ID + ") REFERENCES " + TABLE_USERS + "(" + COLUMN_USER_ID + ") ON DELETE CASCADE);";
 
         db.execSQL("PRAGMA foreign_keys = ON");
         db.execSQL(createUsersTable);
         db.execSQL(createGroupsTable);
         db.execSQL(createMembersTable);
+        db.execSQL(createMessagesTable);
 
     }
 
@@ -98,6 +117,7 @@ public class MyDatabase extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_GROUPS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_MEMBERS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_MESSAGES);
         onCreate(db);
     }
 
@@ -489,5 +509,57 @@ public class MyDatabase extends SQLiteOpenHelper {
 
         db.close();
     }
+        //////// Send Messages
+    public void addMessage(int groupId, int senderId, String messageText) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_GROUP_REF_ID_FOR_MESSAGE, groupId);
+        values.put(COLUMN_SENDER_ID, senderId);
+        values.put(COLUMN_MESSAGE_TEXT, messageText);
+
+        // Store Indian time
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+        String currentTime = sdf.format(new Date());
+        values.put(COLUMN_TIMESTAMP, currentTime);
+
+        db.insert(TABLE_MESSAGES, null, values);
+        db.close();
+    }
+
+    // Show all group messages
+    public ArrayList<Message> getMessagesByGroup(int groupId) {
+        ArrayList<Message> messages = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT u." + COLUMN_USERNAME + ", " +
+                "m." + COLUMN_MESSAGE_TEXT + ", " +
+                "m." + COLUMN_TIMESTAMP +
+                " FROM " + TABLE_MESSAGES + " m " +
+                " JOIN " + TABLE_USERS + " u ON m." + COLUMN_SENDER_ID + " = u." + COLUMN_USER_ID +
+                " WHERE m." + COLUMN_GROUP_REF_ID_FOR_MESSAGE + " = ?" +
+                " ORDER BY m." + COLUMN_TIMESTAMP + " ASC";
+
+        Cursor cursor = db.rawQuery(query, new String[]{String.valueOf(groupId)});
+
+        if (cursor.moveToFirst()) {
+            do {
+                String sender = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_USERNAME));
+                String text = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MESSAGE_TEXT));
+                String time = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TIMESTAMP));
+
+                Message message = new Message(sender, text, time);
+                messages.add(message);
+
+            } while (cursor.moveToNext());
+        }
+
+        cursor.close();
+        db.close();
+
+        return messages;
+    }
+
+
 
 }

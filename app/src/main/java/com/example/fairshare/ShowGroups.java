@@ -2,6 +2,7 @@ package com.example.fairshare;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -39,7 +40,9 @@ public class ShowGroups extends AppCompatActivity {
         setContentView(R.layout.show_groups);
 
         Intent i = getIntent();
-        name = i.getStringExtra("username");
+        SharedPreferences login = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+        name = login.getString("username", null);
+
 
         button = findViewById(R.id.button);
         tv = findViewById(R.id.tv);
@@ -62,7 +65,7 @@ public class ShowGroups extends AppCompatActivity {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String groupName = groups.get(position);
                 int groupId = db.getGroupIdByGroupName(groupName);
-                Intent i = new Intent(ShowGroups.this,ShowMembers.class);
+                Intent i = new Intent(ShowGroups.this,GroupChat.class);
                 i.putExtra("groupId",groupId);
                 i.putExtra("groupName",groupName);
                 i.putExtra("userName",name);

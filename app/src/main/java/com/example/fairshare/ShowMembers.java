@@ -59,11 +59,22 @@ public class ShowMembers extends AppCompatActivity {
             public void onClick(View v) {
                 if(groupCreator.equals(userName)){
                     db1.deleteGroup(groupId);
+                    Intent i = new Intent(ShowMembers.this, ShowGroups.class);
+                    i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(i);
                     finish();
+
+
                 }
                 else{
                     db1.deleteMemberFromGroup(userName,groupId);
+                    Intent k = new Intent(ShowMembers.this, ShowGroups.class);
+                    k.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(k);
                     finish();
+
+
+
                 }
 
             }
