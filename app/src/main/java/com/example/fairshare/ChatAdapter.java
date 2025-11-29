@@ -74,4 +74,5 @@ public class ChatAdapter extends ArrayAdapter<Message> {
         return convertView;
     }
 }
+//
 
