@@ -75,4 +75,3 @@ public class ChatAdapter extends ArrayAdapter<Message> {
     }
 }
 //
-

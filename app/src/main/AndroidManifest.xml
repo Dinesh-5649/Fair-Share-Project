@@ -14,10 +14,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FairShare">
         <activity
-            android:name=".CaptchaActivity"
+            android:name=".GroupChat"
             android:exported="false" />
         <activity
-            android:name=".GroupChat"
+            android:name=".CaptchaActivity"
             android:exported="false" />
         <activity
             android:name=".AddMembers"
