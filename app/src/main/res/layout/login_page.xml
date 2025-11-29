@@ -25,16 +25,16 @@
         android:id="@+id/et1"
         android:layout_width="0dp"
         android:layout_height="50dp"
-        android:layout_marginTop="40dp"
         android:layout_marginHorizontal="40dp"
+        android:layout_marginTop="40dp"
         android:hint="Username"
+        android:inputType="text"
         android:paddingStart="15dp"
         android:textColor="@color/white"
         android:textColorHint="#808080"
-        android:inputType="text"
-        app:layout_constraintTop_toBottomOf="@id/loginImg"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/loginImg" />
 
     <EditText
         android:id="@+id/et2"

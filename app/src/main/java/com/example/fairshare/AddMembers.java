@@ -62,7 +62,7 @@ public class AddMembers extends AppCompatActivity {
                 if(db.addMembers(member,groupId, phoneNumber)){
                     Toast.makeText(AddMembers.this,"User added to the group successfully",Toast.LENGTH_SHORT).show();
                 }
-
+                else  Toast.makeText(AddMembers.this,"Failed to add the user",Toast.LENGTH_SHORT).show();
 
             }
         });

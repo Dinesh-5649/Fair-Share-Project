@@ -45,7 +45,7 @@
         android:layout_marginTop="12dp"
         android:ems="10"
         android:hint="Phone Number"
-        android:inputType="phone"
+        android:inputType="number"
         android:textColor="@color/white"
         android:textColorHint="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
@@ -61,12 +61,14 @@
         android:layout_marginTop="16dp"
         android:ems="10"
         android:hint="Password"
+        android:inputType="textPassword"
         android:textColor="@color/white"
         android:textColorHint="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.6"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/etNum" />
+        app:layout_constraintTop_toBottomOf="@+id/etNum"
+        tools:visibility="visible" />
 
     <EditText
         android:id="@+id/etConfirmPass"
@@ -76,6 +78,7 @@
         android:layout_marginTop="16dp"
         android:ems="10"
         android:hint="Confirm Password"
+        android:inputType="textPassword"
         android:textColor="@color/white"
         android:textColorHint="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
