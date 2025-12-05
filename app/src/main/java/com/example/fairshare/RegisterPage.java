@@ -118,7 +118,7 @@ public class RegisterPage extends AppCompatActivity {
             return;
         }
         if (!password.equals(confirmPass)) {
-            etConfirmPass.setError("Passwords do not match");
+            etConfirmPass.setError("Passwords doesn't not match");
             return;
         }
         if (ageStr.isEmpty()) {

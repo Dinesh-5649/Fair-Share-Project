@@ -30,7 +30,7 @@ public class ExpenseSplitActivity extends AppCompatActivity {
         btnAddExpense = findViewById(R.id.btnAddExpense);
         radioSplitType = findViewById(R.id.radioSplitType);
 
-        groupId = getIntent().getIntExtra("group_id", -1);
+        groupId = getIntent().getIntExtra("groupId", -1);
         if (groupId == -1) {
             Toast.makeText(this, "Group not selected", Toast.LENGTH_SHORT).show();
             finish();

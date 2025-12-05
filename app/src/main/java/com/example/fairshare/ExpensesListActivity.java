@@ -4,8 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.*;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.*;
 
@@ -13,6 +17,7 @@ public class ExpensesListActivity extends AppCompatActivity {
 
     MyDatabase myDatabase;
     int groupId;
+    FloatingActionButton fb;
     RecyclerView rvBalances;
     ListView lvExpenses;
 
@@ -24,6 +29,7 @@ public class ExpensesListActivity extends AppCompatActivity {
         myDatabase = new MyDatabase(this);
         rvBalances = findViewById(R.id.rvBalances);
         lvExpenses = findViewById(R.id.lvExpenses);
+        fb = findViewById(R.id.fb);
 
         groupId = getIntent().getIntExtra("group_id", -1);
         if (groupId == -1) {
@@ -31,7 +37,20 @@ public class ExpensesListActivity extends AppCompatActivity {
             finish();
             return;
         }
+        fb.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(ExpensesListActivity.this, ExpenseSplitActivity.class);
+                i.putExtra("groupId", groupId);
+                startActivity(i);
+            }
+        });
 
+    }
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
         loadData();
     }
 
@@ -76,5 +95,9 @@ public class ExpensesListActivity extends AppCompatActivity {
         rvBalances.setLayoutManager(new LinearLayoutManager(this));
         BalanceAdapter adapter = new BalanceAdapter(balanceMap);
         rvBalances.setAdapter(adapter);
+
+
     }
+
+
 }

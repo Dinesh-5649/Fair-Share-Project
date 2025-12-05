@@ -40,18 +40,18 @@
         <activity
             android:name=".LoginPage"
             android:exported="true">
-        <activity
-            android:name=".ExpenseSplitActivity"
-            android:exported="false" />
-        <activity
-                android:name=".ExpenselistActivity"
-                android:exported="false" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity
+            android:name=".ExpenseSplitActivity"
+            android:exported="false" />
+        <activity
+                android:name=".ExpensesListActivity"
+                android:exported="false" />
     </application>
 
 </manifest>

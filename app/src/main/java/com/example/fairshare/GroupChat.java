@@ -1,6 +1,7 @@
 package com.example.fairshare;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -76,6 +77,7 @@ public class GroupChat extends AppCompatActivity {
         chatAdapter = new ChatAdapter((Context) this, messages,userName);
         chatListView.setAdapter(chatAdapter);
 
+
         bt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -106,7 +108,7 @@ public class GroupChat extends AppCompatActivity {
         fb2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent i = new Intent(GroupChat.this, ExpenseSplitActivity.class);
+                Intent i = new Intent(GroupChat.this, ExpensesListActivity.class);
                 i.putExtra("group_id", groupId);
                 i.putExtra("group_name", groupName);
                 i.putExtra("user_name", userName);
