@@ -21,7 +21,7 @@ public class MyDatabase extends SQLiteOpenHelper {
 
     Context context;
     public static final String DATABASE_NAME = "my_database.db";
-    public static final int DATABASE_VERSION = 4;
+    public static final int DATABASE_VERSION = 5;
 
     // TABLE: Users
     public static final String TABLE_USERS = "users";
@@ -57,6 +57,17 @@ public class MyDatabase extends SQLiteOpenHelper {
     public static final String COLUMN_SENDER_ID = "sender_id";
     public static final String COLUMN_MESSAGE_TEXT = "message_text";
     public static final String COLUMN_TIMESTAMP = "timestamp";
+
+    // TABLE: Expenses
+    public static final String TABLE_EXPENSES = "expenses";
+    public static final String COLUMN_EXPENSE_ID = "expense_id";
+    public static final String COLUMN_EXPENSE_GROUP_ID = "expense_group_id";
+    public static final String COLUMN_EXPENSE_PAID_BY = "expense_paid_by"; // store member_name (String)
+    public static final String COLUMN_EXPENSE_AMOUNT = "expense_amount";
+    public static final String COLUMN_EXPENSE_TYPE = "expense_type"; // "equal","custom","percentage"
+    public static final String COLUMN_EXPENSE_DESC = "expense_description";
+    public static final String COLUMN_EXPENSE_TIMESTAMP = "expense_timestamp";
+
 
 
     public MyDatabase(@Nullable Context context) {
@@ -104,11 +115,22 @@ public class MyDatabase extends SQLiteOpenHelper {
                 "FOREIGN KEY(" + COLUMN_GROUP_REF_ID_FOR_MESSAGE + ") REFERENCES " + TABLE_GROUPS + "(" + COLUMN_GROUP_ID + ") ON DELETE CASCADE, " +
                 "FOREIGN KEY(" + COLUMN_SENDER_ID + ") REFERENCES " + TABLE_USERS + "(" + COLUMN_USER_ID + ") ON DELETE CASCADE);";
 
+        String createExpensesTable = "CREATE TABLE " + TABLE_EXPENSES + " (" +
+                COLUMN_EXPENSE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COLUMN_EXPENSE_GROUP_ID + " INTEGER NOT NULL, " +
+                COLUMN_EXPENSE_PAID_BY + " TEXT NOT NULL, " +
+                COLUMN_EXPENSE_AMOUNT + " REAL NOT NULL, " +
+                COLUMN_EXPENSE_TYPE + " TEXT NOT NULL, " +
+                COLUMN_EXPENSE_DESC + " TEXT, " +
+                COLUMN_EXPENSE_TIMESTAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP, " +
+                "FOREIGN KEY(" + COLUMN_EXPENSE_GROUP_ID + ") REFERENCES " + TABLE_GROUPS + "(" + COLUMN_GROUP_ID + ") ON DELETE CASCADE);";
+
         db.execSQL("PRAGMA foreign_keys = ON");
         db.execSQL(createUsersTable);
         db.execSQL(createGroupsTable);
         db.execSQL(createMembersTable);
         db.execSQL(createMessagesTable);
+        db.execSQL(createExpensesTable);
 
     }
 
@@ -119,6 +141,7 @@ public class MyDatabase extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_GROUPS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_MEMBERS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_MESSAGES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_EXPENSES);
         onCreate(db);
     }
 
@@ -559,6 +582,45 @@ public class MyDatabase extends SQLiteOpenHelper {
         db.close();
 
         return messages;
+    }
+    // Insert an expense
+    public boolean addExpense(int groupId, String paidByMemberName, double amount, String type, String description) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_EXPENSE_GROUP_ID, groupId);
+        cv.put(COLUMN_EXPENSE_PAID_BY, paidByMemberName);
+        cv.put(COLUMN_EXPENSE_AMOUNT, amount);
+        cv.put(COLUMN_EXPENSE_TYPE, type);
+        cv.put(COLUMN_EXPENSE_DESC, description);
+
+        long result = db.insert(TABLE_EXPENSES, null, cv);
+        db.close();
+        return result != -1;
+    }
+
+    // Get all expenses for a group
+    public ArrayList<Expense> getExpensesByGroup(int groupId) {
+        ArrayList<Expense> list = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT * FROM " + TABLE_EXPENSES + " WHERE " + COLUMN_EXPENSE_GROUP_ID + " = ? ORDER BY " + COLUMN_EXPENSE_TIMESTAMP + " DESC";
+        Cursor c = db.rawQuery(query, new String[]{String.valueOf(groupId)});
+        if (c.moveToFirst()) {
+            do {
+                int id = c.getInt(c.getColumnIndexOrThrow(COLUMN_EXPENSE_ID));
+                String paidBy = c.getString(c.getColumnIndexOrThrow(COLUMN_EXPENSE_PAID_BY));
+                double amount = c.getDouble(c.getColumnIndexOrThrow(COLUMN_EXPENSE_AMOUNT));
+                String type = c.getString(c.getColumnIndexOrThrow(COLUMN_EXPENSE_TYPE));
+                String desc = c.getString(c.getColumnIndexOrThrow(COLUMN_EXPENSE_DESC));
+                String time = c.getString(c.getColumnIndexOrThrow(COLUMN_EXPENSE_TIMESTAMP));
+
+                Expense e = new Expense(id, groupId, paidBy, amount, type, desc, time);
+                list.add(e);
+            } while (c.moveToNext());
+        }
+        c.close();
+        db.close();
+        return list;
     }
 
 
