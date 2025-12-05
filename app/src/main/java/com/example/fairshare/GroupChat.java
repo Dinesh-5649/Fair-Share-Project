@@ -1,6 +1,7 @@
 package com.example.fairshare;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -30,7 +31,7 @@ public class GroupChat extends AppCompatActivity {
     ArrayList<Message> messages;
     EditText et;
     Button bt;
-    FloatingActionButton fb;
+    FloatingActionButton fb, fb2;
     ChatAdapter chatAdapter;
     MyDatabase db;
     int groupId;
@@ -56,6 +57,7 @@ public class GroupChat extends AppCompatActivity {
         bt = findViewById(R.id.bt);
         tv = findViewById(R.id.tv);
         fb = findViewById(R.id.fb);
+        fb2 = findViewById(R.id.AddExp);
         et = findViewById(R.id.et);
         chatListView = findViewById(R.id.lv);
         chatListView.setStackFromBottom(true);
@@ -74,6 +76,7 @@ public class GroupChat extends AppCompatActivity {
         messages = db.getMessagesByGroup(groupId);
         chatAdapter = new ChatAdapter((Context) this, messages,userName);
         chatListView.setAdapter(chatAdapter);
+
 
         bt.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -102,7 +105,17 @@ public class GroupChat extends AppCompatActivity {
 
             }
         });
-
+        fb2.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(GroupChat.this, ExpensesListActivity.class);
+                i.putExtra("group_id", groupId);
+                i.putExtra("group_name", groupName);
+                i.putExtra("user_name", userName);
+                startActivity(i);
+                finish();
+            }
+        });
 
     }
 
