@@ -21,7 +21,7 @@ public class MyDatabase extends SQLiteOpenHelper {
 
     Context context;
     public static final String DATABASE_NAME = "my_database.db";
-    public static final int DATABASE_VERSION = 5;
+    public static final int DATABASE_VERSION = 6;
 
     // TABLE: Users
     public static final String TABLE_USERS = "users";
@@ -68,6 +68,12 @@ public class MyDatabase extends SQLiteOpenHelper {
     public static final String COLUMN_EXPENSE_DESC = "expense_description";
     public static final String COLUMN_EXPENSE_TIMESTAMP = "expense_timestamp";
 
+    // TABLE: Expense Shares
+    public static final String TABLE_EXPENSE_SHARES = "expense_shares";
+    public static final String COLUMN_SHARE_ID = "share_id";
+    public static final String COLUMN_CUSTOM_EXPENSE_ID = "expense_id";
+    public static final String COLUMN_MEMBER_ID = "member_id";
+    public static final String COLUMN_SHARE_AMOUNT = "share_amount";
 
 
     public MyDatabase(@Nullable Context context) {
@@ -125,12 +131,21 @@ public class MyDatabase extends SQLiteOpenHelper {
                 COLUMN_EXPENSE_TIMESTAMP + " DATETIME DEFAULT CURRENT_TIMESTAMP, " +
                 "FOREIGN KEY(" + COLUMN_EXPENSE_GROUP_ID + ") REFERENCES " + TABLE_GROUPS + "(" + COLUMN_GROUP_ID + ") ON DELETE CASCADE);";
 
+        String createExpenseSharesTable = "CREATE TABLE " + TABLE_EXPENSE_SHARES + " (" +
+                COLUMN_SHARE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                COLUMN_EXPENSE_ID + " INTEGER NOT NULL, " +
+                COLUMN_MEMBER_ID + " INTEGER NOT NULL, " +
+                COLUMN_SHARE_AMOUNT + " REAL NOT NULL, " +
+                "FOREIGN KEY(" + COLUMN_EXPENSE_ID + ") REFERENCES " +
+                TABLE_EXPENSES + "(" + COLUMN_EXPENSE_ID + ") ON DELETE CASCADE);";
+
         db.execSQL("PRAGMA foreign_keys = ON");
         db.execSQL(createUsersTable);
         db.execSQL(createGroupsTable);
         db.execSQL(createMembersTable);
         db.execSQL(createMessagesTable);
         db.execSQL(createExpensesTable);
+        db.execSQL(createExpenseSharesTable);
 
     }
 
@@ -142,6 +157,8 @@ public class MyDatabase extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_MEMBERS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_MESSAGES);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_EXPENSES);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_EXPENSE_SHARES);
+
         onCreate(db);
     }
 
@@ -621,6 +638,58 @@ public class MyDatabase extends SQLiteOpenHelper {
         c.close();
         db.close();
         return list;
+    }
+    //Insert Expense Shares
+    public void insertExpenseShare(int expenseId, int memberId, double shareAmount) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_EXPENSE_ID, expenseId);
+        cv.put(COLUMN_MEMBER_ID, memberId);
+        cv.put(COLUMN_SHARE_AMOUNT, shareAmount);
+        db.insert(TABLE_EXPENSE_SHARES, null, cv);
+        db.close();
+    }
+    //Get shares for an expense (for display later)
+    public Cursor getExpenseShares(int expenseId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery(
+                "SELECT m." + COLUMN_MEMBER_NAME + ", s." + COLUMN_SHARE_AMOUNT +
+                        " FROM " + TABLE_EXPENSE_SHARES + " s " +
+                        " JOIN " + TABLE_MEMBERS + " m ON s." + COLUMN_MEMBER_ID + " = m." + COLUMN_MEMBERS_ID +
+                        " WHERE s." + COLUMN_EXPENSE_ID + "=?",
+                new String[]{String.valueOf(expenseId)}
+        );
+    }
+
+    // Get last inserted expense id
+    public int getLastExpenseId() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(
+                "SELECT expense_id FROM expenses ORDER BY expense_id DESC LIMIT 1",
+                null
+        );
+        int id = -1;
+        if (c.moveToFirst()) {
+            id = c.getInt(0);
+        }
+        c.close();
+        return id;
+    }
+
+    // Get member ID by name & group
+    public int getMemberIdByName(String name, int groupId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(
+                "SELECT member_id FROM members_table WHERE member_name=? AND group_reference=?",
+                new String[]{name, String.valueOf(groupId)}
+        );
+
+        int id = -1;
+        if (c.moveToFirst()) {
+            id = c.getInt(0);
+        }
+        c.close();
+        return id;
     }
 
 
