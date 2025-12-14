@@ -21,7 +21,7 @@ public class MyDatabase extends SQLiteOpenHelper {
 
     Context context;
     public static final String DATABASE_NAME = "my_database.db";
-    public static final int DATABASE_VERSION = 6;
+    public static final int DATABASE_VERSION = 8;
 
     // TABLE: Users
     public static final String TABLE_USERS = "users";
@@ -71,9 +71,11 @@ public class MyDatabase extends SQLiteOpenHelper {
     // TABLE: Expense Shares
     public static final String TABLE_EXPENSE_SHARES = "expense_shares";
     public static final String COLUMN_SHARE_ID = "share_id";
-    public static final String COLUMN_CUSTOM_EXPENSE_ID = "expense_id";
+    public static final String COLUMN_EXPENSE_ID_REF = "expense_id";
     public static final String COLUMN_MEMBER_ID = "member_id";
     public static final String COLUMN_SHARE_AMOUNT = "share_amount";
+    public static final String COLUMN_PAID_STATUS = "paid_status";
+    public static final String COLUMN_PAID_TIME = "paid_time";
 
 
     public MyDatabase(@Nullable Context context) {
@@ -133,10 +135,12 @@ public class MyDatabase extends SQLiteOpenHelper {
 
         String createExpenseSharesTable = "CREATE TABLE " + TABLE_EXPENSE_SHARES + " (" +
                 COLUMN_SHARE_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COLUMN_EXPENSE_ID + " INTEGER NOT NULL, " +
+                COLUMN_EXPENSE_ID_REF + " INTEGER NOT NULL, " +
                 COLUMN_MEMBER_ID + " INTEGER NOT NULL, " +
                 COLUMN_SHARE_AMOUNT + " REAL NOT NULL, " +
-                "FOREIGN KEY(" + COLUMN_EXPENSE_ID + ") REFERENCES " +
+                COLUMN_PAID_STATUS + " INTEGER NOT NULL, " +
+                COLUMN_PAID_TIME + " DATETIME, " +
+                "FOREIGN KEY(" + COLUMN_EXPENSE_ID_REF + ") REFERENCES " +
                 TABLE_EXPENSES + "(" + COLUMN_EXPENSE_ID + ") ON DELETE CASCADE);";
 
         db.execSQL("PRAGMA foreign_keys = ON");
@@ -643,9 +647,10 @@ public class MyDatabase extends SQLiteOpenHelper {
     public void insertExpenseShare(int expenseId, int memberId, double shareAmount) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
-        cv.put(COLUMN_EXPENSE_ID, expenseId);
+        cv.put(COLUMN_EXPENSE_ID_REF, expenseId);
         cv.put(COLUMN_MEMBER_ID, memberId);
         cv.put(COLUMN_SHARE_AMOUNT, shareAmount);
+        cv.put(COLUMN_PAID_STATUS, 0);
         db.insert(TABLE_EXPENSE_SHARES, null, cv);
         db.close();
     }
@@ -692,6 +697,75 @@ public class MyDatabase extends SQLiteOpenHelper {
         return id;
     }
 
+    public String getMemberNameById(int memberId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(
+                "SELECT member_name FROM members_table WHERE member_id=?",
+                new String[]{String.valueOf(memberId)}
+        );
+
+        String memberName ="";
+        if (c.moveToFirst()) {
+           memberName = c.getString(c.getColumnIndexOrThrow(COLUMN_MEMBER_NAME));
+
+        }
+        c.close();
+        return memberName;
+    }
+
+    public boolean updatePaidStatus(int memberId, int expenseId ) {
 
 
+        /// Check if the expense exist
+        SQLiteDatabase db = this.getWritableDatabase();
+        String query = "SELECT * FROM " + TABLE_EXPENSE_SHARES + " WHERE " + COLUMN_MEMBER_ID + " =? AND " + COLUMN_EXPENSE_ID_REF +" =?";
+        Cursor c = db.rawQuery(query, new String[]{String.valueOf(memberId),String.valueOf(expenseId)});
+        if (c.getCount() == 0) {
+            Toast.makeText(context, "Expense does not exist!", Toast.LENGTH_LONG).show();
+            c.close();
+            db.close();
+            return false;
+        } else {
+            c.close();
+        }
+
+
+        //update paid status
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_PAID_STATUS, 1);
+        String where = COLUMN_MEMBER_ID + " =? AND " + COLUMN_EXPENSE_ID_REF +" =?";
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+        String currentTime = sdf.format(new Date());
+
+        cv.put(COLUMN_PAID_TIME, currentTime);
+        int result = db.update(TABLE_EXPENSE_SHARES, cv, where, new String[]{String.valueOf(memberId),String.valueOf(expenseId)});
+        db.close();
+        return result == 1;
+    }
+
+
+    public ArrayList<ExpenseShare> getExpenseShareByExpense(int expenseRefId) {
+        ArrayList<ExpenseShare> list = new ArrayList<>();
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT * FROM " + TABLE_EXPENSE_SHARES + " WHERE " + COLUMN_EXPENSE_ID_REF + " = ?";
+        Cursor c = db.rawQuery(query, new String[]{String.valueOf(expenseRefId)});
+        if (c.moveToFirst()) {
+            do {
+                int expenseIdRef = c.getInt(c.getColumnIndexOrThrow(COLUMN_EXPENSE_ID_REF));
+                double shareAmount = c.getDouble(c.getColumnIndexOrThrow(COLUMN_SHARE_AMOUNT));
+                int memberId = c.getInt(c.getColumnIndexOrThrow(COLUMN_MEMBER_ID));
+                int paidStatus = c.getInt(c.getColumnIndexOrThrow(COLUMN_PAID_STATUS));
+                String memberName = getMemberNameById(memberId);
+
+                ExpenseShare e = new ExpenseShare(expenseIdRef, memberId, shareAmount, paidStatus, memberName);
+                list.add(e);
+            } while (c.moveToNext());
+        }
+        c.close();
+        db.close();
+        return list;
+    }
 }

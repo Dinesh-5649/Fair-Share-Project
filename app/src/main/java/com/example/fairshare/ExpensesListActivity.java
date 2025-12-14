@@ -17,8 +17,8 @@ public class ExpensesListActivity extends AppCompatActivity {
 
     MyDatabase myDatabase;
     int groupId;
+    int memberId;
     FloatingActionButton fb;
-    RecyclerView rvBalances;
     ListView lvExpenses;
 
     @Override
@@ -27,11 +27,12 @@ public class ExpensesListActivity extends AppCompatActivity {
         setContentView(R.layout.activity_expenses_list);
 
         myDatabase = new MyDatabase(this);
-        rvBalances = findViewById(R.id.rvBalances);
         lvExpenses = findViewById(R.id.lvExpenses);
         fb = findViewById(R.id.fb);
 
         groupId = getIntent().getIntExtra("group_id", -1);
+        String name = getIntent().getStringExtra("user_name");
+        memberId = myDatabase.getMemberIdByName(name, groupId);
         if (groupId == -1) {
             Toast.makeText(this, "Group missing", Toast.LENGTH_SHORT).show();
             finish();
@@ -46,6 +47,8 @@ public class ExpensesListActivity extends AppCompatActivity {
             }
         });
 
+
+
     }
     @Override
     protected void onResume()
@@ -55,14 +58,9 @@ public class ExpensesListActivity extends AppCompatActivity {
     }
 
     private void loadData() {
-        // 1. Get members
-        ArrayList<String> members = myDatabase.getMembersByGroup(groupId);
 
-        // initialize balance map
-        Map<String, Double> balanceMap = new HashMap<>();
-        for (String m : members) balanceMap.put(m, 0.0);
 
-        // 2. Get expenses
+        //  Get expenses
         ArrayList<Expense> expenses = myDatabase.getExpensesByGroup(groupId);
 
         // Display expenses in listview (simple)
@@ -72,31 +70,21 @@ public class ExpensesListActivity extends AppCompatActivity {
         }
         lvExpenses.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, expenseStrings));
 
-        // 3. For each expense: split equally among members in group (simple equal-split logic)
-        for (Expense e : expenses) {
-            // Equal split among all members in that group (change if needed)
-            int n = members.size();
-            if (n == 0) continue;
-            double share = e.amount / n;
+        lvExpenses.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-            for (String m : members) {
-                double prev = balanceMap.getOrDefault(m, 0.0);
-                if (m.equals(e.paidBy)) {
-                    // payer paid full amount; net change = + (amount - share)
-                    balanceMap.put(m, prev + (e.amount - share));
-                } else {
-                    // others owe share
-                    balanceMap.put(m, prev - share);
-                }
+                int expenseId = expenses.get(position).getId();
+                double expenseAmount = expenses.get(position).getAmount();
+                String description = expenses.get(position).getDescription();
+                Intent i = new Intent(ExpensesListActivity.this, ShowExpenseShares.class);
+                i.putExtra("expenseId",expenseId);
+                i.putExtra("expenseAmount",expenseAmount);
+                i.putExtra("description",description);
+                startActivity(i);
+
             }
-        }
-
-        // 4. Show balanceMap in RecyclerView
-        rvBalances.setLayoutManager(new LinearLayoutManager(this));
-        BalanceAdapter adapter = new BalanceAdapter(balanceMap);
-        rvBalances.setAdapter(adapter);
-
-
+        });
     }
 
 

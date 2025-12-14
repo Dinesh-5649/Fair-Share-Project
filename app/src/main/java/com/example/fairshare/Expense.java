@@ -18,4 +18,32 @@ public class Expense {
         this.description = description;
         this.timestamp = timestamp;
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public int getGroupId() {
+        return groupId;
+    }
+
+    public String getPaidBy() {
+        return paidBy;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getTimestamp() {
+        return timestamp;
+    }
 }
