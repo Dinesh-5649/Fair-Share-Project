@@ -88,6 +88,18 @@ public class ExpenseSplitActivity extends AppCompatActivity {
         } else {
             splitType = "equal";
         }
+        double totalPercent = 0;
+        for (double p : splitMap.values()) {
+            totalPercent += p;
+        }
+
+        if (Math.round(totalPercent) != 100) {
+            Toast.makeText(this,
+                    "Total percentage must be 100%",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
 
         // Insert expense
         boolean expenseAdded =
@@ -167,22 +179,56 @@ public class ExpenseSplitActivity extends AppCompatActivity {
 
         splitMap.clear();
 
+        int emptyCount = 0;
+        int emptyMemberId = -1;
+        double enteredTotal = 0;
+
         for (int i = 0; i < container.getChildCount(); i++) {
             EditText et = (EditText) container.getChildAt(i);
             String memberName = et.getTag().toString();
+            int memberId = getMemberIdByName(memberName);
 
-            if (et.getText().toString().trim().isEmpty()) {
-                Toast.makeText(this, "Fill all split values", Toast.LENGTH_SHORT).show();
+            String text = et.getText().toString().trim();
+
+            if (text.isEmpty()) {
+                emptyCount++;
+                emptyMemberId = memberId;
+            } else {
+                double value = Double.parseDouble(text);
+                if (value < 0) {
+                    Toast.makeText(this, "Invalid percentage", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                splitMap.put(memberId, value);
+                enteredTotal += value;
+            }
+        }
+
+        // Allow only ONE empty field
+        if (emptyCount > 1) {
+            Toast.makeText(this,
+                    "Leave only one member empty for auto split",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Auto-calculate remaining percentage
+        if (emptyCount == 1) {
+            double remaining = 100 - enteredTotal;
+
+            if (remaining < 0) {
+                Toast.makeText(this,
+                        "Total percentage exceeds 100",
+                        Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            double value = Double.parseDouble(et.getText().toString());
-            int memberId = getMemberIdByName(memberName);
-            splitMap.put(memberId, value);
+            splitMap.put(emptyMemberId, remaining);
         }
 
         Toast.makeText(this, "Split saved", Toast.LENGTH_SHORT).show();
     }
+
 
     // =============================
     // HELPER METHODS
