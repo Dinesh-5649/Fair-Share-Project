@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -6,28 +8,46 @@
     android:background="@color/lightGreen"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
     tools:context=".ShowGroups">
 
-
-    <TextView
-        android:id="@+id/tv"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="0dp"
+        android:layout_height="?attr/actionBarSize"
         android:background="@color/blue1"
-        android:text="Hello"
-        android:textColor="@color/white"
-        android:paddingEnd="10dp"
-        android:gravity="end"
-        android:textSize="35sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.827"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Left Title -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:text="Groups"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:paddingStart="16dp"/>
+
+        <!-- Right Username -->
+        <TextView
+            android:id="@+id/tvHello"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:text="Hello"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:paddingEnd="16dp"
+            android:layout_gravity="end"/>
+    </androidx.appcompat.widget.Toolbar>
+
 
     <ListView
         android:id="@+id/lv"
         android:layout_width="match_parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv"
         android:layout_height="match_parent"
         android:layout_marginTop="60dp"
         app:layout_constraintEnd_toEndOf="parent"
