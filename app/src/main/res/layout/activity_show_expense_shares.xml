@@ -13,16 +13,28 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="15dp"
         android:text="TextView"
+        android:textSize="25sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ListView
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:id="@+id/lv"
         app:layout_constraintTop_toBottomOf="@+id/tvDis"
-        android:layout_marginTop="15dp"
+        app:layout_constraintBottom_toTopOf="@+id/btn"
+        android:layout_marginTop="50dp"
+        android:layout_marginBottom="55dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/btn"
+        android:text="Pay"
+        android:layout_marginBottom="15dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
