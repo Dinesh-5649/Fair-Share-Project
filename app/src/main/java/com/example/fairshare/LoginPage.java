@@ -38,23 +38,39 @@ public class LoginPage extends AppCompatActivity {
 
             Intent intent = new Intent(LoginPage.this, RegisterPage.class);
             startActivity(intent);
+            Toast.makeText(LoginPage.this, "Register", Toast.LENGTH_SHORT).show();
         });
 
         btnLogin.setOnClickListener(v -> {
+
             String username = etUsername.getText().toString().trim();
             String password = etPassword.getText().toString().trim();
 
-            SharedPreferences login = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
-            login.edit().putString("username", username).apply();
-            login.edit().putString("password", password).apply();
+            if (username.isEmpty()) {
+                etUsername.setError("Enter username");
+                return;
+            }
 
+            if (password.isEmpty()) {
+                etPassword.setError("Enter password");
+                return;
+            }
 
             if (db.loginUser(username, password)) {
+                Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
+
+                // Save username to SharedPreferences
+                SharedPreferences prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+                prefs.edit().putString("username", username).apply();
 
                 Intent intent = new Intent(LoginPage.this, ShowGroups.class);
                 intent.putExtra("username", username);
                 startActivity(intent);
+                finish();
+            }
 
+            else {
+                Toast.makeText(this, "Invalid username or password", Toast.LENGTH_SHORT).show();
             }
         });
 

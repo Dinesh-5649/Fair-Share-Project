@@ -21,7 +21,7 @@ public class MyDatabase extends SQLiteOpenHelper {
 
     Context context;
     public static final String DATABASE_NAME = "my_database.db";
-    public static final int DATABASE_VERSION = 8;
+    public static final int DATABASE_VERSION = 14;
 
     // TABLE: Users
     public static final String TABLE_USERS = "users";
@@ -772,4 +772,129 @@ public class MyDatabase extends SQLiteOpenHelper {
         db.close();
         return list;
     }
+
+    public boolean updateProfile(String newEmail, String newPhone) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        // Check duplicate email or phone
+        Cursor cursor = db.rawQuery(
+                "SELECT * FROM " + TABLE_USERS + " WHERE " + COLUMN_EMAIL + "=? OR " + COLUMN_NUMBER + "=?",
+                new String[]{newEmail, newPhone}
+        );
+
+        if (cursor.getCount() > 0) {
+            cursor.close();
+            return false;
+        }
+        cursor.close();
+
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_EMAIL, newEmail);
+        cv.put(COLUMN_NUMBER, newPhone);
+
+        // TEMP: update user 1 (later use login session)
+        db.update(TABLE_USERS, cv, COLUMN_USER_ID + "=?", new String[]{"1"});
+        return true;
+    }
+
+    // Delete user account
+
+    public boolean deleteAccount(String username, String password) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        Cursor cursor = db.rawQuery(
+                "SELECT * FROM " + TABLE_USERS + " WHERE " + COLUMN_USERNAME + "=? AND " + COLUMN_PASSWORD + "=?",
+                new String[]{username, password}
+        );
+
+        if (!cursor.moveToFirst()) {
+            cursor.close();
+            return false;
+        }
+        cursor.close();
+
+        db.delete(TABLE_USERS, COLUMN_USERNAME + "=?", new String[]{username});
+        return true;
+    }
+
+    public User getUser(String username) {
+        SQLiteDatabase db = this.getReadableDatabase();
+
+        String query = "SELECT " + COLUMN_USERNAME + ", " +
+                COLUMN_NUMBER + ", " +
+                COLUMN_EMAIL + ", " +
+                COLUMN_AGE +
+                " FROM " + TABLE_USERS +
+                " WHERE " + COLUMN_USERNAME + "=?";
+
+        Cursor c = db.rawQuery(query, new String[]{username});
+
+        if (c.moveToFirst()) {
+            String uname = c.getString(0);
+            String number = c.getString(1);
+            String email = c.getString(2);
+            int age = c.getInt(3);
+
+            c.close();
+            return new User(uname, number, email, age);
+        }
+
+        c.close();
+        return null;
+    }
+
+    public boolean updateUser(String oldName, String newName, String phone, String email, int age) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_USERNAME, newName);
+        cv.put(COLUMN_NUMBER, phone);
+        cv.put(COLUMN_EMAIL, email);
+        cv.put(COLUMN_AGE, age);
+
+        // Update timestamp
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault());
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata"));
+        cv.put(COLUMN_UPDATED_TIME, sdf.format(new Date()));
+
+        int rows = db.update(TABLE_USERS, cv, COLUMN_USERNAME + "=?", new String[]{oldName});
+        return rows > 0;
+    }
+
+    public Cursor getUserDetails(String username) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery(
+                "SELECT * FROM " + TABLE_USERS + " WHERE " + COLUMN_USERNAME + "=?",
+                new String[]{username}
+        );
+    }
+
+    public String getEmailByUsername(String username) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(
+                "SELECT email_id FROM users WHERE username=?",
+                new String[]{username}
+        );
+        String email = "";
+        if (c.moveToFirst()) {
+            email = c.getString(0);
+        }
+        c.close();
+        return email;
+    }
+
+    public int getAgeByUsername(String username) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        Cursor c = db.rawQuery(
+                "SELECT age FROM users WHERE username=?",
+                new String[]{username}
+        );
+        int age = 0;
+        if (c.moveToFirst()) {
+            age = c.getInt(0);
+        }
+        c.close();
+        return age;
+    }
+
 }
