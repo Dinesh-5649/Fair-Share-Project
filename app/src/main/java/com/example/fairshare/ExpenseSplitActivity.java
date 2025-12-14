@@ -52,7 +52,19 @@ public class ExpenseSplitActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerMembers.setAdapter(adapter);
 
-        btnSplitDetails.setOnClickListener(v -> showSplitDialog());
+        // Open split dialog only for Custom & Percentage
+        btnSplitDetails.setOnClickListener(v -> {
+            int checkedId = rgSplitType.getCheckedRadioButtonId();
+
+            if (checkedId == R.id.rbEqual) {
+                Toast.makeText(this,
+                        "Equal split does not need details",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+            showSplitDialog();
+        });
+
         btnAddExpense.setOnClickListener(v -> addExpense());
     }
 
@@ -88,20 +100,58 @@ public class ExpenseSplitActivity extends AppCompatActivity {
         } else {
             splitType = "equal";
         }
-        double totalPercent = 0;
-        for (double p : splitMap.values()) {
-            totalPercent += p;
+
+        // =============================
+        // VALIDATION FIRST (NO DB YET)
+        // =============================
+
+        if (splitType.equals("custom")) {
+
+            if (splitMap.isEmpty()) {
+                Toast.makeText(this,
+                        "Enter custom split details",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            double totalCustom = 0;
+            for (double amt : splitMap.values()) {
+                totalCustom += amt;
+            }
+
+            if (Math.abs(totalCustom - totalAmount) > 0.01) {
+                Toast.makeText(this,
+                        "Custom split must equal total amount",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
 
-        if (Math.round(totalPercent) != 100) {
-            Toast.makeText(this,
-                    "Total percentage must be 100%",
-                    Toast.LENGTH_SHORT).show();
-            return;
+        if (splitType.equals("percentage")) {
+
+            if (splitMap.isEmpty()) {
+                Toast.makeText(this,
+                        "Enter percentage split details",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            double totalPercent = 0;
+            for (double p : splitMap.values()) {
+                totalPercent += p;
+            }
+
+            if (Math.round(totalPercent) != 100) {
+                Toast.makeText(this,
+                        "Total percentage must be 100%",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
         }
 
-
-        // Insert expense
+        // =============================
+        // NOW INSERT EXPENSE (SAFE)
+        // =============================
         boolean expenseAdded =
                 myDatabase.addExpense(groupId, paidBy, totalAmount, splitType, desc);
 
@@ -110,22 +160,22 @@ public class ExpenseSplitActivity extends AppCompatActivity {
             return;
         }
 
-        // Get last inserted expense id
         int expenseId = myDatabase.getLastExpenseId();
 
         // =============================
-        // SAVE SHARES
+        // INSERT SHARES
         // =============================
+
         if (splitType.equals("equal")) {
 
             double eachShare = totalAmount / members.size();
-
             for (String member : members) {
                 int memberId = getMemberIdByName(member);
                 myDatabase.insertExpenseShare(expenseId, memberId, eachShare);
             }
+        }
 
-        } else if (splitType.equals("custom")) {
+        else if (splitType.equals("custom")) {
 
             for (int memberId : splitMap.keySet()) {
                 myDatabase.insertExpenseShare(
@@ -134,8 +184,9 @@ public class ExpenseSplitActivity extends AppCompatActivity {
                         splitMap.get(memberId)
                 );
             }
+        }
 
-        } else if (splitType.equals("percentage")) {
+        else if (splitType.equals("percentage")) {
 
             for (int memberId : splitMap.keySet()) {
                 double percent = splitMap.get(memberId);
@@ -148,6 +199,7 @@ public class ExpenseSplitActivity extends AppCompatActivity {
         finish();
     }
 
+
     // =============================
     // SPLIT INPUT DIALOG
     // =============================
@@ -157,17 +209,25 @@ public class ExpenseSplitActivity extends AppCompatActivity {
         View view = getLayoutInflater().inflate(R.layout.dialog_split_input, null);
         LinearLayout container = view.findViewById(R.id.containerMembers);
 
+        boolean isPercentage =
+                rgSplitType.getCheckedRadioButtonId() == R.id.rbPercentage;
+
         for (String member : members) {
             EditText et = new EditText(this);
-            et.setHint(member + " amount / %");
-            et.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+            et.setHint(isPercentage
+                    ? member + " (%)"
+                    : member + " amount");
+            et.setInputType(
+                    InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL
+            );
             et.setTag(member);
             container.addView(et);
         }
 
         builder.setView(view)
                 .setTitle("Enter Split Details")
-                .setPositiveButton("Save", (d, w) -> collectSplit(container))
+                .setPositiveButton("Save", (dialog, which) ->
+                        collectSplit(container))
                 .setNegativeButton("Cancel", null)
                 .show();
     }
@@ -179,59 +239,35 @@ public class ExpenseSplitActivity extends AppCompatActivity {
 
         splitMap.clear();
 
-        int emptyCount = 0;
-        int emptyMemberId = -1;
-        double enteredTotal = 0;
-
         for (int i = 0; i < container.getChildCount(); i++) {
             EditText et = (EditText) container.getChildAt(i);
             String memberName = et.getTag().toString();
-            int memberId = getMemberIdByName(memberName);
 
-            String text = et.getText().toString().trim();
-
-            if (text.isEmpty()) {
-                emptyCount++;
-                emptyMemberId = memberId;
-            } else {
-                double value = Double.parseDouble(text);
-                if (value < 0) {
-                    Toast.makeText(this, "Invalid percentage", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                splitMap.put(memberId, value);
-                enteredTotal += value;
-            }
-        }
-
-        // Allow only ONE empty field
-        if (emptyCount > 1) {
-            Toast.makeText(this,
-                    "Leave only one member empty for auto split",
-                    Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Auto-calculate remaining percentage
-        if (emptyCount == 1) {
-            double remaining = 100 - enteredTotal;
-
-            if (remaining < 0) {
+            if (et.getText().toString().trim().isEmpty()) {
                 Toast.makeText(this,
-                        "Total percentage exceeds 100",
+                        "Fill all values",
                         Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            splitMap.put(emptyMemberId, remaining);
+            double value = Double.parseDouble(et.getText().toString());
+
+            if (value < 0) {
+                Toast.makeText(this,
+                        "Value cannot be negative",
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            int memberId = getMemberIdByName(memberName);
+            splitMap.put(memberId, value);
         }
 
         Toast.makeText(this, "Split saved", Toast.LENGTH_SHORT).show();
     }
 
-
     // =============================
-    // HELPER METHODS
+    // HELPER METHOD
     // =============================
     private int getMemberIdByName(String memberName) {
         return myDatabase.getMemberIdByName(memberName, groupId);
