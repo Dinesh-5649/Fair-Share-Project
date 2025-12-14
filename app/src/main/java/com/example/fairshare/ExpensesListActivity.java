@@ -68,7 +68,7 @@ public class ExpensesListActivity extends AppCompatActivity {
         for (Expense e : expenses) {
             expenseStrings.add(e.paidBy + " paid " + String.format("%.2f", e.amount) + " (" + e.description + ")");
         }
-        lvExpenses.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, expenseStrings));
+        lvExpenses.setAdapter(new ArrayAdapter<>(this, R.layout.list_item_expense, expenseStrings));
 
         lvExpenses.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
