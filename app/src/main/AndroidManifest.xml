@@ -33,6 +33,7 @@
         <activity android:name=".AddMembers" android:exported="false"/>
         <activity android:name=".GroupChat" android:exported="false"/>
         <activity android:name=".CaptchaActivity" android:exported="false"/>
+        <activity android:name=".ShowExpenseShares" android:exported="false"/>
 
         <!-- SETTINGS RELATED -->
         <activity android:name=".SettingsActivity" android:exported="true"/>
