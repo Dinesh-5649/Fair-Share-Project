@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/lightGreen"
     android:padding="12dp">
 
 
@@ -15,6 +16,7 @@
         android:text="Expenses"
         app:layout_constraintTop_toTopOf="parent"
         android:textStyle="bold"
+        android:textColor="@color/white"
         android:layout_marginTop="16dp"
         app:layout_constraintStart_toStartOf="parent"/>
 
