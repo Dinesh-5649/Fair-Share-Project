@@ -726,6 +726,10 @@ public class MyDatabase extends SQLiteOpenHelper {
             db.close();
             return false;
         } else {
+            if (c.moveToFirst()){
+                int paidStatus = c.getInt(c.getColumnIndexOrThrow(COLUMN_PAID_STATUS));
+                if(paidStatus==1) return false;
+            }
             c.close();
         }
 

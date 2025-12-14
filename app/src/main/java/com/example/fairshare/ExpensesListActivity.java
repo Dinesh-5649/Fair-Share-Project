@@ -81,6 +81,7 @@ public class ExpensesListActivity extends AppCompatActivity {
                 i.putExtra("expenseId",expenseId);
                 i.putExtra("expenseAmount",expenseAmount);
                 i.putExtra("description",description);
+                i.putExtra("memberId",memberId);
                 startActivity(i);
 
             }
