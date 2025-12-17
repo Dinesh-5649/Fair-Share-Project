@@ -1,5 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
+    // Add the dependency for the Google services Gradle plugin
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -43,4 +45,9 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation("androidx.sqlite:sqlite:2.4.0")
     implementation("androidx.sqlite:sqlite-framework:2.4.0")
+    implementation(platform("com.google.firebase:firebase-bom:34.7.0"))
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:okhttp:4.10.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.10.0")
 }

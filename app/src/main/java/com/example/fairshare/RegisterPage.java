@@ -22,7 +22,7 @@ public class RegisterPage extends AppCompatActivity {
     String finalName, finalNumber, finalPassword, finalGender, finalEmail;
     int finalAge;
 
-    MyDatabase db = new MyDatabase(this);
+    SupabaseRepository db = new SupabaseRepository(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -166,12 +166,7 @@ public class RegisterPage extends AppCompatActivity {
 
             if (token != null && !token.isEmpty()) {
 
-                if (db.registerUser(finalName, finalNumber, finalPassword, finalAge, finalGender, finalEmail)) {
-                    Toast.makeText(this, "Registered successfully!", Toast.LENGTH_SHORT).show();
-                    finish();
-                } else {
-                    Toast.makeText(this, "Registration failed", Toast.LENGTH_SHORT).show();
-                }
+                db.registerUser(finalName, finalNumber, finalPassword, finalAge, finalGender, finalEmail);
 
             } else {
                 Toast.makeText(this, "Captcha failed!", Toast.LENGTH_SHORT).show();

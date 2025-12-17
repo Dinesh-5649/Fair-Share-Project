@@ -18,7 +18,7 @@ public class LoginPage extends AppCompatActivity {
 
     EditText etUsername, etPassword;
     Button btnLogin, btnRegister, btnForgot;
-    MyDatabase db;
+    SupabaseRepository db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,7 +30,7 @@ public class LoginPage extends AppCompatActivity {
         btnLogin = findViewById(R.id.btnLogin);
         btnRegister = findViewById(R.id.btnRegister);
         btnForgot = findViewById(R.id.btnForgotPassword);
-        db = new MyDatabase(this);
+        db = new SupabaseRepository(this);
 
 
 
@@ -56,22 +56,35 @@ public class LoginPage extends AppCompatActivity {
                 return;
             }
 
-            if (db.loginUser(username, password)) {
-                Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show();
+            db.loginUser(username, password, new Callbacks.LoginCallback() {
+                @Override
+                public void onSuccess(UserModel user) {
 
-                // Save username to SharedPreferences
-                SharedPreferences prefs = getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
-                prefs.edit().putString("username", username).apply();
+                    Toast.makeText(LoginPage.this,
+                            "Login successful",
+                            Toast.LENGTH_SHORT).show();
 
-                Intent intent = new Intent(LoginPage.this, ShowGroups.class);
-                intent.putExtra("username", username);
-                startActivity(intent);
-                finish();
-            }
+                    // Save username
+                    SharedPreferences prefs =
+                            getSharedPreferences("MyAppPrefs", MODE_PRIVATE);
+                    prefs.edit()
+                            .putString("username", username)
+                            .apply();
 
-            else {
-                Toast.makeText(this, "Invalid username or password", Toast.LENGTH_SHORT).show();
-            }
+                    Intent intent = new Intent(LoginPage.this, ShowGroups.class);
+                    intent.putExtra("username", username);
+                    startActivity(intent);
+                    finish();
+                }
+
+                @Override
+                public void onFailure(String error) {
+                    Toast.makeText(LoginPage.this,
+                            error,
+                            Toast.LENGTH_SHORT).show();
+                }
+            });
+
         });
 
         btnForgot.setOnClickListener(new View.OnClickListener() {
