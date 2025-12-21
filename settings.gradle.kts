@@ -16,9 +16,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url = uri("https://jitpack.io") }
     }
-}
 
-rootProject.name = "Fair  Share"
-include(":app")
- 
+    rootProject.name = "Fair  Share"
+    include(":app")
+}

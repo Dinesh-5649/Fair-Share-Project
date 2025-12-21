@@ -28,7 +28,7 @@ public class ExpensesListActivity extends AppCompatActivity {
 
         myDatabase = new MyDatabase(this);
         lvExpenses = findViewById(R.id.lvExpenses);
-        fb = findViewById(R.id.fb);
+        fb = findViewById(R.id.fbAddExpense);
 
         groupId = getIntent().getIntExtra("group_id", -1);
         String name = getIntent().getStringExtra("user_name");
@@ -47,6 +47,14 @@ public class ExpensesListActivity extends AppCompatActivity {
             }
         });
 
+        FloatingActionButton chartBtn = findViewById(R.id.chartbtn);
+
+        chartBtn.setOnClickListener(v -> {
+            Intent intent = new Intent(ExpensesListActivity.this, ExpenseChartActivity.class);
+            intent.putExtra("groupId", groupId);
+            startActivity(intent);
+
+        });
 
 
     }
