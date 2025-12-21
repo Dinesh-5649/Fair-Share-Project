@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -895,6 +896,80 @@ public class MyDatabase extends SQLiteOpenHelper {
         }
         c.close();
         return age;
+    }
+    public HashMap<String, Float> getExpenseSplitByGroup(int groupId) {
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        HashMap<String, Float> expenseMap = new HashMap<>();
+
+        Cursor c = db.rawQuery(
+                "SELECT " + COLUMN_EXPENSE_PAID_BY + ", SUM(" + COLUMN_EXPENSE_AMOUNT + ") " +
+                        "FROM " + TABLE_EXPENSES +
+                        " WHERE " + COLUMN_EXPENSE_GROUP_ID + " = ? " +
+                        "GROUP BY " + COLUMN_EXPENSE_PAID_BY,
+                new String[]{String.valueOf(groupId)}
+        );
+
+        if (c.moveToFirst()) {
+            do {
+                String user = c.getString(0);
+                float total = c.getFloat(1);
+                expenseMap.put(user, total);
+            } while (c.moveToNext());
+        }
+
+        c.close();
+        return expenseMap;
+    }
+    public HashMap<String, Float> getPaidVsRemaining(int expenseId) {
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        HashMap<String, Float> map = new HashMap<>();
+
+        Cursor paid = db.rawQuery(
+                "SELECT SUM(" + COLUMN_SHARE_AMOUNT + ") FROM " + TABLE_EXPENSE_SHARES +
+                        " WHERE " + COLUMN_EXPENSE_ID_REF + "=? AND " + COLUMN_PAID_STATUS + "=1",
+                new String[]{String.valueOf(expenseId)}
+        );
+
+        Cursor remaining = db.rawQuery(
+                "SELECT SUM(" + COLUMN_SHARE_AMOUNT + ") FROM " + TABLE_EXPENSE_SHARES +
+                        " WHERE " + COLUMN_EXPENSE_ID_REF + "=? AND " + COLUMN_PAID_STATUS + "=0",
+                new String[]{String.valueOf(expenseId)}
+        );
+
+        float paidAmt = (paid.moveToFirst() && !paid.isNull(0)) ? paid.getFloat(0) : 0;
+        float remainingAmt = (remaining.moveToFirst() && !remaining.isNull(0)) ? remaining.getFloat(0) : 0;
+
+        map.put("Paid", paidAmt);
+        map.put("Remaining", remainingAmt);
+
+        paid.close();
+        remaining.close();
+        return map;
+    }
+
+    public HashMap<String, Float> getRemainingByMember(int expenseId) {
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        HashMap<String, Float> map = new HashMap<>();
+
+        Cursor c = db.rawQuery(
+                "SELECT m." + COLUMN_MEMBER_NAME + ", SUM(s." + COLUMN_SHARE_AMOUNT + ") " +
+                        "FROM " + TABLE_EXPENSE_SHARES + " s " +
+                        "JOIN " + TABLE_MEMBERS + " m ON s." + COLUMN_MEMBER_ID + " = m." + COLUMN_MEMBERS_ID +
+                        " WHERE s." + COLUMN_EXPENSE_ID_REF + "=? AND s." + COLUMN_PAID_STATUS + "=0 " +
+                        "GROUP BY m." + COLUMN_MEMBER_NAME,
+                new String[]{String.valueOf(expenseId)}
+        );
+
+        if (c.moveToFirst()) {
+            do {
+                map.put(c.getString(0), c.getFloat(1));
+            } while (c.moveToNext());
+        }
+        c.close();
+        return map;
     }
 
 }

@@ -6,6 +6,7 @@
     android:id="@+id/main"
     android:background="@color/lightGreen"
     android:layout_width="match_parent"
+    android:fitsSystemWindows="true"
     android:layout_height="match_parent"
     tools:context=".ShowGroups">
 
@@ -39,15 +40,14 @@
 
     <Button
         android:id="@+id/delete"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="47dp"
-        android:layout_marginBottom="59dp"
-        android:clickable="true"
-        android:text="Exit"
+        android:layout_width="100dp"
+        android:layout_height="61dp"
         android:backgroundTint="@android:color/transparent"
-        android:textColor="@color/white"
+        android:clickable="true"
         android:foregroundGravity="center"
+        android:text="Exit"
+        android:textSize="15dp"
+        android:textColor="@color/white"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@android:drawable/ic_menu_add" />
@@ -59,6 +59,7 @@
         android:layout_marginEnd="47dp"
         android:layout_marginBottom="59dp"
         android:src="@drawable/group_add"
+        android:background="@color/green"
         android:focusable="true"
         android:clickable="true"
         android:contentDescription="Add"

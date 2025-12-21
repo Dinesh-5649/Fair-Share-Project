@@ -27,7 +27,7 @@ public class ShowExpenseShares extends AppCompatActivity {
 
         MyDatabase db = new MyDatabase(this);
 
-        tv = findViewById(R.id.tvDis);
+        tv = findViewById(R.id.tvDescription);
         lv = findViewById(R.id.lv);
         btn = findViewById(R.id.btn);
 
@@ -53,7 +53,7 @@ public class ShowExpenseShares extends AppCompatActivity {
             );
         }
 
-        // ✅ CUSTOM ADAPTER WITH WHITE TEXT
+        // CUSTOM ADAPTER WITH WHITE TEXT
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 this,
                 R.layout.item_expense_share,
